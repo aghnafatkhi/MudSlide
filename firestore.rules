@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'aghna1011@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidAchievement(data) {
+      return data.keys().hasAll(['title', 'date', 'createdAt']) &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 100 &&
+        data.date is string && data.date.size() > 0 && data.date.size() <= 100 &&
+        data.createdAt is number &&
+        (data.get('description', '') is string) &&
+        (data.get('imageUrl', '') is string);
+    }
+
+    function isValidMember(data) {
+      return data.keys().hasAll(['name', 'role', 'createdAt']) &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.role is string && data.role.size() > 0 && data.role.size() <= 100 &&
+        data.createdAt is number &&
+        (data.get('bio', '') is string) &&
+        (data.get('imageUrl', '') is string) &&
+        (data.get('sortOrder', 0) is number);
+    }
+
+    function isValidGalleryImage(data) {
+      return data.keys().hasAll(['imageUrl', 'createdAt']) &&
+        data.imageUrl is string && data.imageUrl.size() > 0 && data.imageUrl.size() <= 1000 &&
+        data.createdAt is number &&
+        (data.get('caption', '') is string);
+    }
+
+    function isValidMessage(data) {
+       return data.keys().hasAll(['name', 'email', 'message', 'createdAt', 'read']) &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.email is string && data.email.size() > 0 && data.email.size() <= 100 &&
+        data.message is string && data.message.size() > 0 && data.message.size() <= 1000 &&
+        data.createdAt is number &&
+        data.read is bool;
+    }
+
+    match /achievements/{achievementId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(achievementId) && isValidAchievement(incoming());
+      allow update: if isAdmin() && isValidId(achievementId) && isValidAchievement(incoming());
+      allow delete: if isAdmin() && isValidId(achievementId);
+    }
+
+    match /members/{memberId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(memberId) && isValidMember(incoming());
+      allow update: if isAdmin() && isValidId(memberId) && isValidMember(incoming());
+      allow delete: if isAdmin() && isValidId(memberId);
+    }
+
+    match /gallery/{imageId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(imageId) && isValidGalleryImage(incoming());
+      allow update: if isAdmin() && isValidId(imageId) && isValidGalleryImage(incoming());
+      allow delete: if isAdmin() && isValidId(imageId);
+    }
+
+    match /messages/{messageId} {
+      allow create: if isValidId(messageId) && isValidMessage(incoming()) && incoming().read == false;
+      allow read: if isAdmin();
+      allow update: if isAdmin() && isValidMessage(incoming()) && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{userId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "achievement": {
+      "title": "Achievement",
+      "description": "An award or competition win",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the achievement" },
+        "date": { "type": "string", "description": "Date of the achievement" },
+        "description": { "type": "string", "description": "Details about the achievement" },
+        "imageUrl": { "type": "string", "description": "URL to the image" },
+        "createdAt": { "type": "number", "description": "Creation timestamp" }
+      },
+      "required": ["title", "date", "createdAt"]
+    },
+    "member": {
+      "title": "Band Member",
+      "description": "Profile of a band member",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Member's name" },
+        "role": { "type": "string", "description": "Band role / instrument" },
+        "bio": { "type": "string", "description": "Short biography" },
+        "imageUrl": { "type": "string", "description": "URL to profile photo" },
+        "sortOrder": { "type": "number", "description": "Order to display" },
+        "createdAt": { "type": "number", "description": "Creation timestamp" }
+      },
+      "required": ["name", "role", "createdAt"]
+    },
+    "galleryImage": {
+      "title": "Gallery Image",
+      "description": "An image from a performance",
+      "type": "object",
+      "properties": {
+        "imageUrl": { "type": "string", "description": "URL to the image" },
+        "caption": { "type": "string", "description": "Image caption" },
+        "createdAt": { "type": "number", "description": "Creation timestamp" }
+      },
+      "required": ["imageUrl", "createdAt"]
+    },
+    "contactMessage": {
+      "title": "Contact Message",
+      "description": "Message from brand or fan",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["name", "email", "message", "createdAt", "read"]
+    }
+  },
+  "firestore": {
+    "/achievements/{achievementId}": {
+      "schema": { "$ref": "achievement" },
+      "description": "List of band achievements"
+    },
+    "/members/{memberId}": {
+      "schema": { "$ref": "member" },
+      "description": "List of band members"
+    },
+    "/gallery/{imageId}": {
+      "schema": { "$ref": "galleryImage" },
+      "description": "Images of performances"
+    },
+    "/messages/{messageId}": {
+      "schema": { "$ref": "contactMessage" },
+      "description": "Messages received from the contact form"
+    },
+    "/admins/{userId}": {
+      "schema": { "type": "object", "properties": { "email": { "type": "string" } } },
+      "description": "Admin users"
+    }
+  }
+}
